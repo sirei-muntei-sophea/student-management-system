@@ -1,0 +1,60 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: gateway-registration-deployment
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: gateway-registration
+  template:
+    metadata:
+      labels:
+        app: gateway-registration
+    spec:
+      containers:
+        - name: api-gateway
+          image: sireimunteisophea/student-api-gateway:v1
+          imagePullPolicy: Always
+          ports:
+            - containerPort: 5050
+
+        - name: registration
+          image: sireimunteisophea/student-registration:v1
+          imagePullPolicy: Always
+          ports:
+            - containerPort: 5001
+          env:
+            - name: MONGO_URI
+              valueFrom:
+                secretKeyRef:
+                  name: student-db-secret
+                  key: MONGO_URI
+
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: search-deployment
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: search-student
+  template:
+    metadata:
+      labels:
+        app: search-student
+    spec:
+      containers:
+        - name: search-student
+          image: sireimunteisophea/student-search:v1
+          imagePullPolicy: Always
+          ports:
+            - containerPort: 5002
+          env:
+            - name: MONGO_URI
+              valueFrom:
+                secretKeyRef:
+                  name: student-db-secret
+                  key: MONGO_URI
